@@ -28,6 +28,6 @@ def compute_reaction_times(kin: pd.DataFrame, cfg: Config) -> list[int | float]:
             rt = int((cp1[0] + cp2[0]) / 2)
             rts.append(rt)
         except Exception as e:
-            warnings.warm(f"RT failed trial {tid}: {e}")
+            warnings.warn(f"RT failed trial {tid}: {e}")
             rts.append(np.nan)
     return rts

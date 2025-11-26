@@ -50,7 +50,7 @@ class PatientData:
         kin_feats = add_kinematic_features(kin_cut, n_prey=n_prey)
 
         # remove paused trials and those with fewer than 10 samples
-        trials_kept, kin_clean, psth_clean, behav_clean = remove_trials(kin_feats, self.behav_df.loc[trial_ids], psth_cut)
+        _, trials_idcs_kept, kin_clean, psth_clean, behav_clean = remove_trials(kin_feats, self.behav_df.loc[trial_ids], psth_cut)
 
         design_mat = add_relative_reward(kin_clean, behav_clean)
 
@@ -63,7 +63,7 @@ class PatientData:
             "session_variables": behav_clean,
             "kinematics": kin_clean,
             "brain_region": self.neuron_info_df.query("trial_id == 0")["brain_region"].to_numpy(),
-            "reaction_times": np.array([rt for idx, rt in rts if idx in trials_kept]),
+            "reaction_times": np.array([rt for idx, rt in enumerate(rts) if idx in trials_idcs_kept]),
         }
         return self.workspace
     

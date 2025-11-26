@@ -8,5 +8,7 @@ class Config:
     smooth: bool = False
     rt_penalty: float = 0.005
     rt_window: tuple[int, int] = (0, 15)
+    savgol_window: int = 11
+    savgol_poly: int = 1
 
 

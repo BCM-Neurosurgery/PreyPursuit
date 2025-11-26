@@ -23,13 +23,13 @@ def cut_to_reaction_time(kin_df: pd.DataFrame, psth: list, reaction_time: list[i
             psth_cut.append(psth[i][int(rt) - 1:])
     # kinematics
     pieces = []
-    for tid in kin_df["trial_id"].unique():
+    for i, tid in enumerate(kin_df["trial_id"].unique()):
         m = kin_df["trial_id"] == tid
-        rt = reaction_time[tid]
+        rt = reaction_time[i]
         if np.isnan(rt):
-            pieces.append(kin_df.loc[m])
+            pieces.append(kin_df[m])
         else:
-            pieces.append(kin_df.loc[m].iloc[int(rt)-1:])
+            pieces.append(kin_df[m].iloc[int(rt)-1:])
     kin_cut = pd.concat(pieces, ignore_index=True)
     return kin_cut, psth_cut
 
@@ -46,7 +46,14 @@ def remove_trials(design_df: pd.DataFrame, behav_df: pd.DataFrame, psth: list) -
 
     # get unique trials
     to_remove = np.unique(np.concatenate([paused_trials, np.array(short_trials)]))
-    to_keep = np.setdiff1d(design_df["trial_id"].unique().values, to_remove)
+    to_keep = np.setdiff1d(design_df["trial_id"].unique(), to_remove)
+    to_remove_idx = []
+    for item in to_remove:
+        idx = np.where(design_df["trial_id"].unique() == item)[0].item()
+        to_remove_idx.append(idx)
+    to_remove_idx = np.array(to_remove_idx)
+    to_keep_idx = np.arange(len(design_df["trial_id"].unique()))
+    to_keep_idx = np.setdiff1d(to_keep_idx, to_remove_idx)
     
     # now remove trials :D
     pieces = []
@@ -54,6 +61,6 @@ def remove_trials(design_df: pd.DataFrame, behav_df: pd.DataFrame, psth: list) -
         m = design_df["trial_id"] == tid
         pieces.append(design_df[m])
     design_df_filtered = pd.concat(pieces, ignore_index=True)
-    psth_filtered = [arr for idx, arr in enumerate(psth) if idx in to_keep]
+    psth_filtered = [arr for idx, arr in enumerate(psth) if idx in to_keep_idx]
     behav_df_filtered = behav_df.loc[to_keep].reset_index(drop=True)
-    return to_keep, desin_df_filtered, psth_filtered, behav_df_filtered
+    return to_keep, to_keep_idx, design_df_filtered, psth_filtered, behav_df_filtered

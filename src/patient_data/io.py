@@ -10,8 +10,8 @@ def _ensure_file(base: str, rel: str, label: str) -> str:
         raise FileNotFoundError(f"{label} not found at {path}")
     return path
 
-def load_behav(bae_path: str) -> pd.DataFrame:
-    behav_path = _ensure_file(bae_path, "events_info.mat", "Behavioral data")
+def load_behav(base_path: str) -> pd.DataFrame:
+    behav_path = _ensure_file(base_path, "events_info.mat", "Behavioral data")
     behav_raw = loadmat(behav_path)
     fieldnames = behav_raw["events_info"].dtype.names
     behav_data = {f: [item[0].item() for item in behav_raw["events_info"][f].squeeze()] for f in fieldnames}
