@@ -30,7 +30,7 @@ class PatientData:
     # outputs set by .compute_Design_matrix
     kinematics_df: Optional[pd.DataFrame] = None
     design_matrix: Optional[pd.DataFrame] = None
-    worksapce: Optional[Dict[str, Any]] = None
+    workspace: Optional[Dict[str, Any]] = None
 
     def load(self) -> None:
         self.behav_df = load_behav(self.path)
