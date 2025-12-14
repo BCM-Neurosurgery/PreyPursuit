@@ -16,6 +16,7 @@ def format_trial(design_mat: pd.DataFrame, trial_id: int, dt: float=1/60, decay_
     trial_mat = design_mat[m]
 
     trial_data = {}
+    trial_data['trial_id'] = trial_id
     # add player position data
     trial_data['player_pos'] = np.vstack((trial_mat.selfXpos, trial_mat.selfYpos)).transpose()
     trial_data['player_pos'] = jnp.array(trial_data['player_pos'])
@@ -24,6 +25,10 @@ def format_trial(design_mat: pd.DataFrame, trial_id: int, dt: float=1/60, decay_
     # add player velocity data
     trial_data['player_vel'] = np.vstack((trial_mat.selfXvel, trial_mat.selfYvel)).transpose()
     trial_data['player_vel'] = jnp.array(trial_data['player_vel'])
+
+    # add starting pos/vel
+    start = np.concatenate([trial_data['player_pos'][0], trial_data['player_vel'][0]])
+    trial_data['player_start'] = jnp.array(start)
     
     # add prey 1 position data
     trial_data['prey1_pos'] = np.vstack((trial_mat.prey1Xpos, trial_mat.prey1Ypos)).transpose()

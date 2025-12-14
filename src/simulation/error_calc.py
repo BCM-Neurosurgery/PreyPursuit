@@ -1,37 +1,5 @@
 import jax.numpy as jnp
-import numpy as np
 
-def simulate(trial_data, shift_matrix, L1, L2, control_type):
-    # initialize state from trial data
-    player_pos = trial_data['player_pos']
-    player_vel = trial_data['player_vel']
-
-    x = np.zeros((len(player_pos) + 1, 4))
-    u_out = np.zeros((len(player_pos), 2))
-    x[0, :] = np.hstack((player_pos[0, :], player_vel[0, :]))
-
-    # initialize integer of position errors (if needed)
-    err_int_pos1 = np.zeros((len(player_pos), 2))
-    err_int_pos2 = np.zeros((len(player_pos), 2))
-
-    for k in range(len(player_pos)):
-        err1, err2, err_int_pos1, err_int_pos2 = CONTROL_ERROR[control_type](x, k, err_int_pos1, err_int_pos2, trial_data)
-
-        # compute control inputs using estimated gains
-        u1 = -L1 * err1
-        u2 = -L2 * err2
-
-        u = shift_matrix[:, k] @ np.vstack((u1, u2))
-        u_out[k, :] = u
-
-        # update state
-        x[k + 1, :] = trial_data['state_matrix'] @ x[k, :] + trial_data['control_matrix'] @ u_out[k, :]
-    
-    # truncate last point
-    x = x[0:-1, :]
-    outputs = {'x': x, 'u_out': u_out, 'shift_matrix': shift_matrix}
-    return outputs
-    
 def _p_control_err(x, k, err_int_pos1, err_int_pos2, inputs):
         err_pos1 = x[k, :2] - inputs['prey1_pos'][k]
         err_pos2 = x[k, :2] - inputs["prey2_pos"][k]

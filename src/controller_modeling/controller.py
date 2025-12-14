@@ -1,180 +1,25 @@
 from scipy.optimize import minimize
 import jax.nn as nn
-from jax import jit
 import jax.numpy as jnp
-from jax import lax
 from jax import grad, jacfwd, jacrev
 from typing import Dict
 from sklearn.exceptions import NotFittedError
 import numpy as np
-from .simulator import simulate, CONTROL_ERROR
-
-class NLLLoss:
-    def __init__(self, num_rbfs: int, 
-                 control_type: str,
-                 lambda_reg: float,
-                 use_gmf_prior: bool=False,
-                 prior_std:Dict={'weights': 10, 'widths': 2, 'gains': 5}
-                 ):
-        self.num_rbfs = num_rbfs
-        self.control_type = control_type
-        self.gain_size = len(control_type)
-        self.use_gmf_prior = use_gmf_prior
-        self.lambda_reg = lambda_reg
-        self.prior_std = prior_std
-
-    @jit
-    def compute_loss(self, params: np.ndarray, inputs:Dict):
-        # set initial state
-        # extract individual params
-        weights = params[:self.num_rbfs]
-        widths = params[self.num_rbfs]
-        L1 = params[(self.num_rbfs + 1):(self.num_rbfs + self.gain_size + 1)]
-        L2 = params[(self.num_rbfs + self.gain_size + 1):(self.num_rbfs + 2 * self.gain_size + 1)]
-        K = params[-1]
-
-        # set initial state
-        self._set_initial_state(self, weights, widths, L1, L2, K, inputs)
-        widths = self.widths
-        L1 = self.L1
-        L2 = self.L2
-        K = self.K
-
-        # now compute simulated trajectory
-        x, u_out, err_int_pos1, err_int_pos2 = lax.fori_loop(
-            0, self.n_steps, self._control_step, 
-            (self.x, self.u_out, self.err_int_pos1, self.err_int_pos2)
-            )
-        
-        # now calculate negative log-likelihood
-        residuals = u_out - inputs['player_accel']
-        log_likelihood = -0.5 * jnp.log(2 * jnp.pi) - 0.5 * jnp.sum(residuals ** 2)
-
-        # Regularization term using GMF prior
-        if self.use_gmf_prior:
-            S_x = _smoothing_penalty(self.num_rbfs)
-            gmf_prior = -0.5 * (weights @ S_x @ weights.T)
-        else:
-            gmf_prior = 0.0
-
-        # Combine log-likelihood and priors
-        prior_weights = -0.5 * jnp.sum((weights / self.prior_std['weights']) ** 2)*0.0
-        prior_widths = -0.5 * jnp.sum((widths /self. prior_std['widths']) ** 2)
-        prior_gains = -0.5 * (jnp.sum((L1 / self.prior_std['gains']) ** 2) + jnp.sum((L2 / self.prior_std['gains']) ** 2))
-        prior_K = -0.5 * jnp.sum((K / self.prior_std['K']) ** 2)
-
-        loss = -log_likelihood - self.lambda_reg * gmf_prior - 0 * prior_weights - prior_widths - prior_gains - prior_K
-        return loss
-    
-    @jit
-    def compute_likelihood_loss(self, params: np.ndarray, inputs:Dict):
-        # set initial state
-        # extract individual params
-        weights = params[:self.num_rbfs]
-        widths = params[self.num_rbfs]
-        L1 = params[(self.num_rbfs + 1):(self.num_rbfs + self.gain_size + 1)]
-        L2 = params[(self.num_rbfs + self.gain_size + 1):(self.num_rbfs + 2 * self.gain_size + 1)]
-        K = params[-1]
-
-        # set initial state
-        self._set_initial_state(self, weights, widths, L1, L2, K, inputs)
-        widths = self.widths
-        L1 = self.L1
-        L2 = self.L2
-        K = self.K
-
-        # now compute simulated trajectory
-        x, u_out, err_int_pos1, err_int_pos2 = lax.fori_loop(
-            0, self.n_steps, self._control_step, 
-            (self.x, self.u_out, self.int_e_pos1, self.int_e_pos2)
-            )
-        
-        # now calculate negative log-likelihood
-        residuals = u_out - inputs['player_accel']
-        log_likelihood = -0.5 * jnp.log(2 * jnp.pi) - 0.5 * jnp.sum(residuals ** 2)
-
-        loss = -log_likelihood
-        return loss
-
-    def _set_initial_state(self, weights: np.ndarray[float], widths: float, L1: float, L2: float, K: float, inputs:Dict):
-        # softplus widths and gain params
-        widths = jnp.log(1 + jnp.exp(widths))
-        L1 = jnp.log(1 + jnp.exp(L1))
-        L2 = jnp.log(1 + jnp.exp(L2))
-        K = jnp.log(1 + jnp.exp(K))
-
-        # generate RBF basis functions using precomputed centers
-        X = self.generate_rbf_basis(inputs['timeline'], inputs['centers'], widths)
-        X = jnp.exp(-((inputs['timeline'][:, None] - inputs['centers'][None, :]) ** 2) / (2 * widths ** 2))
-        X /= jnp.sum(X, axis=1, keepdims=True)
-        timeline_kernel = jnp.dot(X, weights)
-
-        # now get initial prey weight values from Rbf funcs
-        w1 = nn.sigmoid(timeline_kernel)
-        w2 = 1 - w1
-
-        # set state matrix to include K
-        dt = inputs['dt']
-        inputs['state_matrix'] = jnp.array([[1, 0, dt, 0],
-                      [0, 1, 0, dt],
-                      [0, 0, 1 - dt * K, 0],
-                      [0, 0, 0, 1 - dt * K]])
-
-        # initialize state
-        n_steps = inputs['prey1_pos'].shape[0]
-        x = jnp.zeros((n_steps + 1, inputs['state_matrix'].shape[1]))
-        x = x.at[0].set(inputs['player_start'])
-        u_out = jnp.zeros((n_steps, inputs['control_matrix']))
-        # integrator vars
-        err_int_pos1 = jnp.zeros(2)
-        err_int_pos2 = jnp.zeros(2)
-
-        # save to instance
-        self.n_steps = n_steps
-        self.x = x
-        self.u_out = u_out
-        self.w1 = w1
-        self.w2 = w2
-        self.L1 = L1
-        self.L2 = L2
-        self.K = K
-        self.dt = dt
-        self.err_int_pos1 = err_int_pos1
-        self.err_int_pos2 = err_int_pos2
-        self.inputs = inputs
-
-    def _control_step(self, k, val):
-        x, u_out, err_int_pos1, err_int_pos2 = val
-        err1, err2, err_int_pos1, err_int_pos2 = CONTROL_ERROR[self.control_type](
-            x, k, err_int_pos1, err_int_pos2, self.inputs
-            )
-
-        # compute control inputs using estimated gains
-        u1 = -self.L1 * err1
-        u2 = -self.L2 * err2
-
-        u = self.w1[k] * u1 + self.w2[k] * u2
-
-        # update state
-        if self.control_type == 'p':
-            x_next = self.inputs['state_matrix'] @ x[k] + (self.inputs['control_matrix'] @ u).flatten()
-            x = x.at[k + 1].set(x_next)
-            u_out = u_out.at[k].set(u.flatten())
-        else:
-            x_next = self.inputs['state_matrix'] @ x[k] + self.inputs['control_matrix'] @ u
-            x = x.at[k + 1].set(x_next)
-            u_out = u_out.at[k].set(u)
-        return x, u_out, err_int_pos1, err_int_pos2
+from ..simulation.simulator import simulate
+from ..simulation.error_calc import CONTROL_ERROR
+from .loss import NLLLoss
+from .utils import smoothing_penalty, generate_rbf_basis, generate_shift_matrix
     
 # TODO: add conditions for slack_Model True and bayes False
 class Controller:
     def __init__(
             self, loss: NLLLoss, inputs: Dict, randomize_weights: bool=True,
             maxiter: int=10_000, tolerance: float=1e-6, 
-            optimizer: str='trust', slack_model: bool=False,
+            optimizer: str='lbfgs', slack_model: bool=False,
             bayes: bool=True,
             elbo_samples: int=40
             ):
+        self.loss = loss
         self.inputs = inputs
         self.control_type = loss.control_type
         self.gain_size = loss.gain_size
@@ -232,7 +77,7 @@ class Controller:
         
         # run the optimization
         if self.optimizer == 'trust':
-            method = 'trust-contr'
+            method = 'trust-constr'
             options = {
                 'gtol': 1e-15,
                 'xtol': 1e-20,
@@ -290,12 +135,12 @@ class Controller:
         L2_fit = np.array(jnp.log(1 + jnp.exp(param_tuple[1])))
         
         # now calculate shift matrix
-        shift_matrix = self._generate_shift_matrix(
+        shift_matrix = generate_shift_matrix(
             self.inputs['timeline'], self.inputs['centers'],
             widths, rbf_weights
             )
 
-        trajectory = simulate(self.inputs, shift_matrix, L1_fit, L2_fit, self.control_type)
+        trajectory = simulate(self.inputs, L1_fit, L2_fit, self.control_type, shift_matrix=shift_matrix)
         return trajectory
     
 
@@ -307,7 +152,7 @@ class Controller:
         
         # compute prior hessian
         # Diagonal terms for weights (GMF prior)
-        smoothing_matrix = _smoothing_penalty(self.num_rbfs)
+        smoothing_matrix = smoothing_penalty(self.num_rbfs)
         H_weights = self.lambda_reg * smoothing_matrix
 
         # Diagonal term for widths (Gaussian prior on widths)
@@ -365,7 +210,7 @@ class Controller:
             weights = sample[:self.num_rbfs]
             widths = sample[self.num_rbfs]
             gains = sample[self.num_rbfs + 1:]
-            S_x = _smoothing_penalty(self.num_rbfs)
+            S_x = smoothing_penalty(self.num_rbfs)
             log_prior_weights = -0.5 * (weights @ S_x @ weights.T)  # GMF prior for weights
             log_prior_widths = -0.5 * np.sum((widths / self.prior_std['widths']) ** 2)  # Gaussian prior for widths
             log_prior_gains = -0.5 * np.sum((gains / self.prior_std['gains']) ** 2)  # Gaussian prior for gains
@@ -401,26 +246,9 @@ class Controller:
         for sample in samples:
             weights = sample[:self.num_rbfs]
             widths = np.log(1 + np.exp(sample[self.num_rbfs]))
-            traj = self._generate_shift_matrix(inputs['timeline'], inputs['centers'], widths, weights)
+            traj = generate_shift_matrix(inputs['timeline'], inputs['centers'], widths, weights)
             controller_selection_trajectories.append(traj)
 
         return np.array(controller_selection_trajectories)  # Shape: (num_samples, num_timesteps)
     
-    def _generate_shift_matrix(timeline, centers, widths, weights):
-        # generate RBFs from fitted params
-        X = jnp.exp(-((timeline[:, None] - centers[None, :]) ** 2) / (2 * widths ** 2))
-        X /= jnp.sum(X, axis=1, keepdims=True)
-        switch_kernel = jnp.dot(X, weights)
-        w1 = nn.sigmoid(switch_kernel)
-        w2 = 1 - w1
-        shift_matrix = [w1, w2]
-        shift_matrix = np.stack(shift_matrix)
-        return shift_matrix
-
-
-
-def _smoothing_penalty(num_rbfs):
-    D_x = jnp.diff(jnp.eye(num_rbfs), n=2, axis=0)
-    S_x = D_x.T @ D_x
-    S_x = jnp.array(S_x)
-    return S_x
+    
