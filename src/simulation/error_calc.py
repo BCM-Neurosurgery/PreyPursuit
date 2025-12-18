@@ -28,13 +28,13 @@ def _pf_control_err(x, k, err_int_pos1, err_int_pos2, inputs):
     # calculate prediction error
     err_pred1 = x[k, :2] - (
         inputs['prey1_pos'][k] + 
-        inputs['prey1_vel'] * inputs['dt'] + 
-        0.5 * inputs['prey1_accel'] * inputs['dt'] ** 2
+        inputs['prey1_vel'][k] * inputs['dt'] + 
+        0.5 * inputs['prey1_accel'][k] * inputs['dt'] ** 2
         )
     err_pred2 = x[k, :2] - (
         inputs['prey2_pos'][k] + 
-        inputs['prey2_vel'] * inputs['dt'] + 
-        0.5 * inputs['prey2_accel'] * inputs['dt'] ** 2
+        inputs['prey2_vel'][k] * inputs['dt'] + 
+        0.5 * inputs['prey2_accel'][k] * inputs['dt'] ** 2
         )
     
     err1 = jnp.vstack((err_pos1, err_pred1))
@@ -82,13 +82,13 @@ def _pif_control_err(x, k, err_int_pos1, err_int_pos2, inputs):
     # calculate prediction error
     err_pred1 = x[k, :2] - (
         inputs['prey1_pos'][k] + 
-        inputs['prey1_vel'] * inputs['dt'] + 
-        0.5 * inputs['prey1_accel'] * inputs['dt'] ** 2
+        inputs['prey1_vel'][k] * inputs['dt'] + 
+        0.5 * inputs['prey1_accel'][k] * inputs['dt'] ** 2
         )
     err_pred2 = x[k, :2] - (
         inputs['prey2_pos'][k] + 
-        inputs['prey2_vel'] * inputs['dt'] + 
-        0.5 * inputs['prey2_accel'] * inputs['dt'] ** 2
+        inputs['prey2_vel'][k] * inputs['dt'] + 
+        0.5 * inputs['prey2_accel'][k] * inputs['dt'] ** 2
         )
     
     err1 = jnp.vstack((err_pos1, err_int_pos1, err_pred1))
@@ -106,13 +106,13 @@ def _pvf_control_err(x, k, err_int_pos1, err_int_pos2, inputs):
     # calculate prediction error
     err_pred1 = x[k, :2] - (
         inputs['prey1_pos'][k] + 
-        inputs['prey1_vel'] * inputs['dt'] + 
-        0.5 * inputs['prey1_accel'] * inputs['dt'] ** 2
+        inputs['prey1_vel'][k] * inputs['dt'] + 
+        0.5 * inputs['prey1_accel'][k] * inputs['dt'] ** 2
         )
     err_pred2 = x[k, :2] - (
         inputs['prey2_pos'][k] + 
-        inputs['prey2_vel'] * inputs['dt'] + 
-        0.5 * inputs['prey2_accel'] * inputs['dt'] ** 2
+        inputs['prey2_vel'][k] * inputs['dt'] + 
+        0.5 * inputs['prey2_accel'][k] * inputs['dt'] ** 2
         )
     
     err1 = jnp.vstack((err_pos1, err_vel1, err_pred1))
@@ -134,13 +134,13 @@ def _pvif_control_err(x, k, err_int_pos1, err_int_pos2, inputs):
     # calculate prediction error
     err_pred1 = x[k, :2] - (
         inputs['prey1_pos'][k] + 
-        inputs['prey1_vel'] * inputs['dt'] + 
-        0.5 * inputs['prey1_accel'] * inputs['dt'] ** 2
+        inputs['prey1_vel'][k] * inputs['dt'] + 
+        0.5 * inputs['prey1_accel'][k] * inputs['dt'] ** 2
         )
     err_pred2 = x[k, :2] - (
         inputs['prey2_pos'][k] + 
-        inputs['prey2_vel'] * inputs['dt'] + 
-        0.5 * inputs['prey2_accel'] * inputs['dt'] ** 2
+        inputs['prey2_vel'][k] * inputs['dt'] + 
+        0.5 * inputs['prey2_accel'][k] * inputs['dt'] ** 2
         )
     
     err1 = jnp.vstack((err_pos1, err_vel1, err_int_pos1, err_pred1))

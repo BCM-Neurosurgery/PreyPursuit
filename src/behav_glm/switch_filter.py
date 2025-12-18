@@ -17,7 +17,7 @@ def identify_crossings(trial_wts):
 
     return cross_idcs
 
-def filter_crossings(cross_idcs, trial_wts, start_drop_thresh=20, end_drop_thresh=11, diff_thresh=3):
+def filter_crossings(cross_idcs, trial_wts, drop_thresh=15, diff_thresh=3):
     filtered_idcs = []
     # id poor trials and skip those while filtering
     good_idx = _id_bad_trials(trial_wts)
@@ -28,8 +28,8 @@ def filter_crossings(cross_idcs, trial_wts, start_drop_thresh=20, end_drop_thres
             continue
         n_timestamps = len(trial_wts[idx])
         # drop crossings too close to start and end
-        start_mask = (cross_idx - start_drop_thresh) > 0
-        end_mask = (cross_idx + end_drop_thresh) <= n_timestamps
+        start_mask = (cross_idx - drop_thresh) > 0
+        end_mask = (cross_idx + drop_thresh + 4) <= n_timestamps
 
         # also drop indices that are too close together (drop the prior one)
         diff_mask = np.ones_like(cross_idx, dtype=bool)

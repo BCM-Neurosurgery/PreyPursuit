@@ -8,7 +8,7 @@ import numpy as np
 from ..simulation.simulator import simulate
 from ..simulation.error_calc import CONTROL_ERROR
 from .loss import NLLLoss
-from .utils import smoothing_penalty, generate_rbf_basis, generate_shift_matrix
+from .utils import smoothing_penalty, generate_shift_matrix
     
 # TODO: add conditions for slack_Model True and bayes False
 class Controller:

@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 import jax.numpy as jnp
 from .utils import smoothing_penalty, generate_rbf_basis
-from .simulator import CONTROL_ERROR, CONTROLLER_INDEX
+from ..simulation.simulator import CONTROL_ERROR
 
 class NLLLoss:
     def __init__(self, num_rbfs: int, 

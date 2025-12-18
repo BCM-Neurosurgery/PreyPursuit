@@ -12,7 +12,7 @@ from .trials import select_trials, subset_trials
 from .kinematics import build_kinematics, add_kinematic_features
 from .reaction_time import compute_reaction_times
 from .trials import cut_to_reaction_time, remove_trials
-from .design_matrix import add_relative_reward
+from .design_matrix import set_larger_prey_first, add_relative_reward
 
 
 @dataclass
@@ -43,6 +43,9 @@ class PatientData:
         trial_df_sub, psth_sub = subset_trials(self.trial_df, self.psth, trial_ids)
 
         kin = build_kinematics(trial_df_sub, rescale=self.cfg.rescale, dt=self.cfg.dt, smooth=self.cfg.smooth)
+        behav_df = self.behav_df
+        if n_prey == 2:
+            kin, behav_df = set_larger_prey_first(kin, behav_df)
         
         rts = compute_reaction_times(kin, cfg=self.cfg)
         kin_cut, psth_cut = cut_to_reaction_time(kin, psth_sub, rts)
@@ -50,8 +53,12 @@ class PatientData:
         kin_feats = add_kinematic_features(kin_cut, n_prey=n_prey)
 
         # remove paused trials and those with fewer than 10 samples
-        _, trials_idcs_kept, kin_clean, psth_clean, behav_clean = remove_trials(kin_feats, self.behav_df.loc[trial_ids], psth_cut)
+        _, trials_idcs_kept, kin_clean, psth_clean, behav_clean = remove_trials(kin_feats, behav_df.loc[trial_ids], psth_cut)
 
+        # if n_prey = 2, ensure larger prey is first
+        if n_prey == 2:
+            kin_clean, behav_clean = set_larger_prey_first(kin_clean, behav_clean)
+    
         design_mat = add_relative_reward(kin_clean, behav_clean)
 
         # keep artifacts on the class

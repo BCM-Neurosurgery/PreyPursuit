@@ -1,0 +1,2 @@
+class NeuralPipeline:
+    pass

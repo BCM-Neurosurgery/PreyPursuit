@@ -10,7 +10,6 @@ def smoothing_penalty(num_rbfs):
 
 def generate_rbf_basis(timeline, centers, widths):
     X = jnp.exp(-((timeline[:, None] - centers[None, :]) ** 2) / (2 * widths ** 2))
-    X /= jnp.sum(X, axis=1, keepdims=True)
     return X
 
 def generate_shift_matrix(timeline, centers, widths, weights):

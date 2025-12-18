@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import ruptures as rpt
 
-def get_switch_types(wt_windows, window_data, split1_thresh=0.9, split2_thresh=0.7, split3_thresh=0.97):
+def get_switch_types(wt_windows, window_data, split1_thresh=0.97, split2_thresh=0.99, split3_thresh=0.97):
     # zscore windows
     windows_z = (wt_windows - np.mean(wt_windows, axis=1, keepdims=True)) / np.std(wt_windows, axis=1, keepdims=True)
 
@@ -114,7 +114,7 @@ def add_relative_reward(switch_df, session_df):
     rel_rewards = []
     for _, row in switch_df.iterrows():
         trial_id = row.trial_id
-        trial_row = session_df[session_df['trial_num'] == trial_id].iloc[0]
+        trial_row = session_df[(session_df['trial_num'] - 1) == trial_id].iloc[0]
         rel_reward = np.abs(trial_row.prey2_val - trial_row.prey1_val)
         rel_rewards.append(rel_reward)
     switch_df['relative_reward'] = rel_rewards

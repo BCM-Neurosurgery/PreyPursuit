@@ -19,7 +19,7 @@ class BehavPipeline:
         design_mat = self.patient_data.design_matrix
 
         # now run controller fitting for each trial in parallel
-        results = Parallel(n_jobs=3, verbose=100, return_as='generator')(
+        results = Parallel(n_jobs=4, verbose=100, return_as='generator')(
             delayed(self.run_single_trial)(format_trial(design_mat, tid))
             for tid in design_mat['trial_id'].unique()
         )
@@ -97,7 +97,7 @@ class BehavPipeline:
             }
 
             return trial_params, trial_outputs
-        except Exception as e: # except Exception as e:
+        except np.linalg.LinAlgError as e: # except Exception as e:
             print(e)
             trial_params = {}
             trial_params['trial_id'] = trial_data['trial_id']

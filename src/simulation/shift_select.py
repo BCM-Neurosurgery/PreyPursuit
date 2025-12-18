@@ -34,7 +34,7 @@ def get_simulated_shift_matrix(n_timestamps, shift_type, shift_matrix=None, gp_s
             shift = np.vstack((shift, 1 - shift))
             return shift
         case 7:
-            if not shift_matrix:
+            if not isinstance(shift_matrix, np.ndarray):
                 raise ValueError("empirical shift matrix required for shift type 7")
             w = np.asarray(shift_matrix).astype(float).flatten()
             w = np.clip(w, 0.0, 1.0)
