@@ -2,3 +2,4 @@ test/
 .vscode/
 *test*.py
 *test*.ipynb
+.ipynb_checkpoints/
