@@ -1,6 +1,4 @@
-import jax.numpy as jnp
 import numpy as np
-import scipy as sp
 from .shift_select import get_simulated_shift_matrix
 from .error_calc import CONTROL_ERROR
 
