@@ -1,4 +1,4 @@
-# PacmanController
+# PreyPursuit
 
 code for running modeling for:
 [Complementary roles for hippocampus and anterior cingulate in composing continuous choice](https://www.biorxiv.org/content/10.1101/2025.03.17.643774v1.abstract)
