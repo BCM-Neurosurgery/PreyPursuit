@@ -1,8 +1,9 @@
 from patsy import dmatrix
 import numpy as np
 import pandas as pd
+from typing import List
 
-def generate_bases(trial_df, n_bases=6, n_interaction_bases=4):
+def generate_bases(trial_df, n_bases=6, n_interaction_bases=4) -> tuple[List[pd.DataFrame]]:
     vars = ['speed', 'reldist', 'relspeed', 'reltime', 'relValue', 'wt']
     bases = {}
     for idx, var in enumerate(vars):
@@ -24,7 +25,7 @@ def generate_bases(trial_df, n_bases=6, n_interaction_bases=4):
                             return_type="dataframe")
     tensor_interaction = pd.DataFrame(basis_interaction * tensor_wt)
 
-    return bases, tensor_interaction
+    return bases, [tensor_interaction]
 
         
 

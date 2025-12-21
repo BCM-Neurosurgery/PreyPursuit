@@ -1,4 +1,6 @@
 import numpy as np
+from .splines import generate_bases
+from .regularization import basis_penalty, interaction_penalty
 
 REL_VALUES = 4
 SAMPLING_RATE = 60
@@ -31,5 +33,14 @@ def normalize_data(trial_df, trial_wts):
     return trial_df
 
 def create_design_matrix(trial_df, n_bases=6, n_interaction_bases=4):
-    pass
+    bases, interaction_tensor = generate_bases(trial_df, n_bases, n_interaction_bases)
+    base_penalty = basis_penalty(bases[0].shape[1])
+    tensor_penalty = tensor_penalty(bases[-1].shape[1])
+    design_mat = {
+        'bases': bases,
+        'base_smoothing_matrix': base_penalty,
+        'interaction_tensors': interaction_tensor,
+        'tensor_smoothing_matrix': tensor_penalty,
+    }
+    return design_mat
 

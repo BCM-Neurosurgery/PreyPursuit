@@ -1,4 +1,5 @@
 from ..patient_data.session import PatientData
+from ..utils import load_shift_matrices
 from .config import NeuralConfig
 from .design import normalize_data, create_design_matrix
 from .models import prs_double_penalty, baseline_noise_model
@@ -13,13 +14,14 @@ from jax.random import PRNGKey
 import jax.numpy as jnp
 
 class NGLM:
-    def __init__(self, patient_data: PatientData, config: NeuralConfig):
+    def __init__(self, patient_data: PatientData, config: NeuralConfig, wt_path: str):
         self.patient_data = patient_data
         self.config = config
+        self.wt_path = wt_path
 
     def format_data(self):
-        trial_df = self.patient_data.workspace['design_mat']
-        trial_wts = self.patient_data.workspace['wt']
+        trial_df = self.patient_data.workspace['design_matrix']
+        trial_wts = load_shift_matrices(self.wt_path)
         trial_df = normalize_data(trial_df, trial_wts)
         design_mat = create_design_matrix(trial_df)
         self.design_mat = design_mat

@@ -6,10 +6,10 @@ import arviz as az
 import dill as pickle
 
 class NeuralPipeline:
-    def __init__(self, patient_data: PatientData, config: NeuralConfig):
+    def __init__(self, patient_data: PatientData, config: NeuralConfig, wt_path: str):
         self.patient_data = patient_data
         self.config = config
-        self.nglm = NGLM(patient_data, config)
+        self.nglm = NGLM(patient_data, config, wt_path)
         self.nglm.format_data()
     
     def get_all_nglm_res(self):
