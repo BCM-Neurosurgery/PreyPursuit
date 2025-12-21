@@ -126,3 +126,14 @@ def prs_double_penalty(bases, base_smoothing_matrix, interaction_tensors=[],
     linear_pred = intercept + linear_pred
 
     numpyro.sample("y", dist.Poisson(rate=jnp.exp(linear_pred)), obs=y)
+
+
+def baseline_noise_model(y):
+    # Define a prior for the intercept term
+    intercept = numpyro.sample("intercept", dist.Normal(0, 10))
+
+    # Linear predictor is simply the intercept
+    linear_pred = intercept
+
+    # Poisson likelihood
+    numpyro.sample("y", dist.Poisson(rate=jnp.exp(linear_pred)), obs=y)

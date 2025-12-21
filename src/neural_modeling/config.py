@@ -2,7 +2,8 @@ from dataclasses import dataclass
 
 @dataclass
 class NeuralConfig:
-    shift_type: int = 6
-    model: str = 'p'
-    rbfs: int = 30
-    lambda_reg: float = 3
+    fit_type = 'vi'
+    n_steps = 10_000
+    optimizer = 'scheduled'
+    guide = 'normal'
+    credible_interval = 95
