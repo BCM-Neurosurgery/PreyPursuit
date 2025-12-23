@@ -5,17 +5,19 @@ from .switch_filter import identify_crossings, filter_crossings, get_cross_windo
 from .switch_typing import get_switch_types, detect_switch_bounds, add_relative_reward
 from .format import format_glm_inputs, normalize_glm_inputs
 from .design import get_design_mat, get_fixed_formulas
-import os
-import numpy as np
 import pandas as pd
-from typing import List
-from scipy.io import loadmat
+from typing import List, Tuple, Any
 from statsmodels.genmod.bayes_mixed_glm import BinomialBayesMixedGLM
 from sklearn.exceptions import NotFittedError
-from glob import glob
+
 
 class BGLM:
-    def __init__(self, patient_data: List[PatientData], config: BGLMConfig, controller_paths: List[str]):
+    def __init__(
+        self,
+        patient_data: List[PatientData],
+        config: BGLMConfig,
+        controller_paths: List[str],
+    ):
         self.shift_matrices = {}
         self.patient_datas = {}
         for pt_info, path in zip(patient_data, controller_paths):
@@ -24,7 +26,7 @@ class BGLM:
             self.patient_datas[pt_id] = pt_info
         self.config = config
 
-    def calc_switches(self):
+    def calc_switches(self) -> pd.DataFrame:
         self.switch_dfs = {}
         for pt_id, shift_matrix in self.shift_matrices.items():
             # get data for particular patient
@@ -35,7 +37,11 @@ class BGLM:
             cross_idcs = filter_crossings(cross_idcs, shift_matrix)
 
             # now get switch_windows and switch_df
-            switch_windows, switch_df = get_cross_windows(shift_matrix, cross_idcs, patient_data.workspace['session_variables']['trial_num'] - 1)
+            switch_windows, switch_df = get_cross_windows(
+                shift_matrix,
+                cross_idcs,
+                patient_data.workspace["session_variables"]["trial_num"] - 1,
+            )
 
             # now type the switches
             switch_df = get_switch_types(switch_windows, switch_df)
@@ -44,25 +50,29 @@ class BGLM:
             switch_df = detect_switch_bounds(shift_matrix, switch_df)
 
             # now add relative reward of trial for each switch
-            switch_df = add_relative_reward(switch_df, patient_data.workspace['session_variables'])
+            switch_df = add_relative_reward(
+                switch_df, patient_data.workspace["session_variables"]
+            )
 
             # add to instance
             self.switch_dfs[pt_id] = switch_df
         return self.switch_dfs
 
-    def format_switch_data(self):
+    def format_switch_data(self) -> Tuple[pd.DataFrame, pd.DataFrame, str]:
         try:
             switch_dfs = self.switch_dfs
         except AttributeError:
-            raise NotFittedError('have to calculate switches before formatting switch data')
+            raise NotFittedError(
+                "have to calculate switches before formatting switch data"
+            )
         glm_data = []
         for pt_id, switch_df in switch_dfs.items():
-            trial_df = self.patient_datas[pt_id].workspace['design_matrix']
-            session_df = self.patient_datas[pt_id].workspace['session_variables']
+            trial_df = self.patient_datas[pt_id].workspace["design_matrix"]
+            session_df = self.patient_datas[pt_id].workspace["session_variables"]
             shift_matrix = self.shift_matrices[pt_id]
             glm_df = format_glm_inputs(switch_df, trial_df, session_df, shift_matrix)
             glm_df = normalize_glm_inputs(glm_df)
-            glm_df['pt_id'] = pt_id
+            glm_df["pt_id"] = pt_id
             glm_data.append(glm_df)
         # now concatenate all glm data
         glm_data = pd.concat(glm_data, ignore_index=True)
@@ -75,20 +85,22 @@ class BGLM:
         self.design_mat = design_mat
         self.fixed_formula = fixed_formula
         return glm_data, design_mat, fixed_formula
-    
-    def fit(self):
+
+    def fit(self) -> Tuple[BinomialBayesMixedGLM, Any]:
         try:
             design_mat = self.design_mat
             fixed_formula = self.fixed_formula
         except AttributeError:
-            raise NotFittedError('have to format switch data before fitting behavioral glm')
-        
+            raise NotFittedError(
+                "have to format switch data before fitting behavioral glm"
+            )
+
         # random effects from patient
-        random_formula = {'subject': '0 + C(pt_id)'}
-        model = BinomialBayesMixedGLM.from_formula(fixed_formula, random_formula, design_mat)
+        random_formula = {"subject": "0 + C(pt_id)"}
+        model = BinomialBayesMixedGLM.from_formula(
+            fixed_formula, random_formula, design_mat
+        )
         model_res = model.fit_vb()
         self.model = model
         self.model_res = model_res
         return model, model_res
-        
-    

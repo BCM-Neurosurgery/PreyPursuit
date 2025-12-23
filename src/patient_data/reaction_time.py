@@ -4,16 +4,18 @@ from scipy.signal import savgol_filter
 import ruptures as rpt
 import warnings
 import pandas as pd
+from typing import List
 from .config import Config
 
-def compute_reaction_times(kin: pd.DataFrame, cfg: Config) -> list[int | float]:
+
+def compute_reaction_times(kin: pd.DataFrame, cfg: Config) -> List[int | float]:
     rts = []
     for tid in kin["trial_id"].unique():
         try:
             m = kin["trial_id"] == tid
             vx = kin.loc[m, "selfXvel"].to_numpy()
             vy = kin.loc[m, "selfYvel"].to_numpy()
-            speed = np.sqrt(vx*vx + vy*vy)
+            speed = np.sqrt(vx * vx + vy * vy)
             speed = np.abs(speed - speed[0])
             speed = savgol_filter(speed, cfg.savgol_window, cfg.savgol_poly)
 

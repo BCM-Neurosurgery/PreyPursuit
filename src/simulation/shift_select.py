@@ -1,24 +1,37 @@
 import numpy as np
 import scipy as sp
+from typing import Optional
 
-def get_simulated_shift_matrix(n_timestamps, shift_type, shift_matrix=None, gp_scalar=3):
+
+def get_simulated_shift_matrix(
+    n_timestamps: int,
+    shift_type: int,
+    shift_matrix: Optional[np.ndarray] = None,
+    gp_scalar: int = 3,
+) -> np.ndarray:
     match shift_type:
         case 1:
             shift = (np.sin(np.linspace(0, 4 * np.pi, n_timestamps)) + 1) / 2
             shift = np.vstack((shift, 1 - shift))
             return shift
         case 2:
-            shift = np.sin(1 * np.linspace(0, 4 * np.pi, n_timestamps)) * np.sin(2 * np.linspace(0, 4 * np.pi, n_timestamps))
-            shift = (shift + np.max(shift))
+            shift = np.sin(1 * np.linspace(0, 4 * np.pi, n_timestamps)) * np.sin(
+                2 * np.linspace(0, 4 * np.pi, n_timestamps)
+            )
+            shift = shift + np.max(shift)
             shift = shift / np.max(shift)
             shift = np.vstack((shift, 1 - shift))
             return shift
         case 3:
-            shift = np.exp(-2 * np.linspace(-2, 2, n_timestamps)) / (1 + np.exp(-20 * np.linspace(-2, 2, n_timestamps)))
+            shift = np.exp(-2 * np.linspace(-2, 2, n_timestamps)) / (
+                1 + np.exp(-20 * np.linspace(-2, 2, n_timestamps))
+            )
             shift = np.vstack((shift, 1 - shift))
             return shift
         case 4:
-            shift = np.exp(-20 * np.linspace(-2, 2, n_timestamps))/ (1 + np.exp(-20 * np.linspace(-2, 2, n_timestamps)))
+            shift = np.exp(-20 * np.linspace(-2, 2, n_timestamps)) / (
+                1 + np.exp(-20 * np.linspace(-2, 2, n_timestamps))
+            )
             shift = np.vstack((shift, 1 - shift))
             return shift
         case 5:
@@ -29,7 +42,13 @@ def get_simulated_shift_matrix(n_timestamps, shift_type, shift_matrix=None, gp_s
             timeseries = np.linspace(0, n_timestamps, n_timestamps)
             timeseries = timeseries - timeseries.mean()
             timeseries = timeseries / timeseries.max()
-            shift = np.exp(gp_draw(n_timestamps,gp_scalar*timeseries.min(),gp_scalar*timeseries.max()))
+            shift = np.exp(
+                gp_draw(
+                    n_timestamps,
+                    gp_scalar * timeseries.min(),
+                    gp_scalar * timeseries.max(),
+                )
+            )
             shift = shift / shift.max()
             shift = np.vstack((shift, 1 - shift))
             return shift
@@ -45,13 +64,13 @@ def get_simulated_shift_matrix(n_timestamps, shift_type, shift_matrix=None, gp_s
             # z_t has two attractors (±sqrt(a/b)), mapped to w_t via sigmoid(beta*z_t)
             # Parameters (tunable or read from cfgparams)
             # TODO: set parameters to be tunable
-            inertia = 0.90      # carry-over of previous latent (0..1); higher = smoother/inertial
-            a = 1.5             # linear gain (creates wells with the cubic)
-            b = 1.0             # cubic gain (stabilizes wells)
-            beta = 4.0          # sigmoid steepness: higher = sharper pull to extremes
-            sigma = 0.05        # noise scale for exploration
-            use_state_drive = False  # set True to include weak state dependence if desired
-            k_adv = 0.1         # weight for state advantage drive (if enabled)
+            inertia = (
+                0.90  # carry-over of previous latent (0..1); higher = smoother/inertial
+            )
+            a = 1.5  # linear gain (creates wells with the cubic)
+            b = 1.0  # cubic gain (stabilizes wells)
+            beta = 4.0  # sigmoid steepness: higher = sharper pull to extremes
+            sigma = 0.05  # noise scale for exploratio
 
             z = 0.0
             shift = np.zeros(n_timestamps)
@@ -67,25 +86,25 @@ def get_simulated_shift_matrix(n_timestamps, shift_type, shift_matrix=None, gp_s
                 #     u = k_adv * advantage
 
                 # Inertial update on z with double-well drift and small noise
-                drift = a * z - b * (z ** 3) + u
+                drift = a * z - b * (z**3) + u
                 z = inertia * z + (1.0 - inertia) * drift + np.random.normal(0.0, sigma)
 
                 # Map latent to [0,1] via a sigmoid (2-choice softmax)
                 shift[k] = 1.0 / (1.0 + np.exp(-beta * z))
-            
+
             shift = np.vstack((shift, 1.0 - shift))
             return shift
         case _:
-            raise ValueError('must provide shift type between 1-8')
-        
-def gp_draw(n_samples, min_sim, max_sim):
+            raise ValueError("must provide shift type between 1-8")
 
+
+def gp_draw(n_samples: int, min_sim: float, max_sim: float) -> np.ndarray:
     X = np.expand_dims(np.linspace(min_sim, max_sim, n_samples), 1)
-    kernel = -0.5 * sp.spatial.distance.cdist(X, X, 'sqeuclidean')  # Kernel of testdata points
+    kernel = -0.5 * sp.spatial.distance.cdist(
+        X, X, "sqeuclidean"
+    )  # Kernel of testdata points
 
     # Draw samples from the prior at our testdata points.
     # Assume a mean of 0 for simplicity
-    ys = np.random.multivariate_normal(
-        mean=np.zeros(n_samples), cov=kernel,
-        size=1)
+    ys = np.random.multivariate_normal(mean=np.zeros(n_samples), cov=kernel, size=1)
     return ys

@@ -9,22 +9,22 @@ data_config = Config()
 behav_config = BehavConfig()
 
 # get path for our data
-data_path = 'example_data/YFD'
+data_path = "example_data/YFD"
 
 # create patient data object and load data
-patient_data = PatientData('YFD', data_path, data_config)
+patient_data = PatientData("YFD", data_path, data_config)
 patient_data.load()
 patient_data.compute_design_matrix()
 
-controller_types = ['p', 'pv', 'pf', 'pi', 'pvi', 'pif', 'pvf', 'pvif']
+controller_types = ["p", "pv", "pf", "pi", "pvi", "pif", "pvf", "pvif"]
 
 for controller in controller_types:
     behav_config.model = controller
     # create behavior modeling pipeline obj
     behav_pipeline = BehavPipeline(patient_data, behav_config)
-    
+
     # create modeling output path and run pipeline
-    output_path = f'{data_path}/{controller}'
+    output_path = f"{data_path}/{controller}"
     try:
         os.mkdir(output_path)
     except Exception as e:

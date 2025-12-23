@@ -4,7 +4,7 @@ from scipy.signal import welch
 import pandas as pd
 
 
-def identify_crossings(trial_wts):
+def identify_crossings(trial_wts: List[np.ndarray]) -> List[int]:
     cross_idcs = []
     for wt in trial_wts:
         y = wt.copy()
@@ -17,7 +17,13 @@ def identify_crossings(trial_wts):
 
     return cross_idcs
 
-def filter_crossings(cross_idcs, trial_wts, drop_thresh=15, diff_thresh=3):
+
+def filter_crossings(
+    cross_idcs: List[int],
+    trial_wts: List[np.ndarray],
+    drop_thresh: int = 15,
+    diff_thresh: int = 3,
+) -> List[int]:
     filtered_idcs = []
     # id poor trials and skip those while filtering
     good_idx = _id_bad_trials(trial_wts)
@@ -39,38 +45,47 @@ def filter_crossings(cross_idcs, trial_wts, drop_thresh=15, diff_thresh=3):
             for idx, diff in enumerate(diffs):
                 if diff < diff_thresh:
                     diff_mask[idx] = False
-  
+
         # remove and append
         filtered_idx = cross_idx[(start_mask) & (end_mask) & (diff_mask)]
         filtered_idcs.append(filtered_idx)
 
     return filtered_idcs
 
-def get_cross_windows(trial_wts, cross_idcs, trial_ids, window_size=8):
+
+def get_cross_windows(
+    trial_wts: List[np.ndarray],
+    cross_idcs: List[int],
+    trial_ids: List[int],
+    window_size: int = 8,
+):
     wt_windows = []
     window_info = []
     for idx, wt in enumerate(trial_wts):
         for jdx, crossing in enumerate(cross_idcs[idx]):
             window_start = crossing - window_size
             window_end = crossing + window_size
-            
+
             wt_window = wt[window_start:window_end].flatten().reshape(-1, 1)
             window_data = np.hstack([idx, trial_ids[idx], jdx, crossing]).reshape(-1, 1)
             wt_windows.append(wt_window)
             window_info.append(window_data)
-    
+
     wt_windows = np.hstack(wt_windows).transpose()
     window_info = np.hstack(window_info).transpose()
     # turn window info into pandas df
     window_info = {
-        'trial_idx': window_info[:, 0],
-        'trial_id': window_info[:, 1],
-        'switch_num': window_info[:, 2],
-        'cross_idx': window_info[:, 3]
+        "trial_idx": window_info[:, 0],
+        "trial_id": window_info[:, 1],
+        "switch_num": window_info[:, 2],
+        "cross_idx": window_info[:, 3],
     }
     return wt_windows, pd.DataFrame(window_info)
 
-def _id_bad_trials(trial_wts: List[np.ndarray], fs=60, nperseg=1024) -> List[bool]:
+
+def _id_bad_trials(
+    trial_wts: List[np.ndarray], fs: int = 60, nperseg: int = 1024
+) -> List[bool]:
     # flag trials whose shift matrix fluctuates too quickly
     # 95% of signal power should be below 2 Hz
 
@@ -83,7 +98,7 @@ def _id_bad_trials(trial_wts: List[np.ndarray], fs=60, nperseg=1024) -> List[boo
             cdf = np.cumsum(Pxx) / total_power
 
             # ensure cdf value at .95 is less than 2
-            if np.where(cdf > .95)[0][0] < np.where(f > 2)[0][0]:
+            if np.where(cdf > 0.95)[0][0] < np.where(f > 2)[0][0]:
                 good_idx[trial] = 1
         except Exception as e:
             print(e)

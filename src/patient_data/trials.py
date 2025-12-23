@@ -1,6 +1,8 @@
 # src/patient_data/trials.py
 import numpy as np
 import pandas as pd
+from typing import Tuple, List
+
 
 def select_trials(behav_df: pd.DataFrame, n_prey: int = 2) -> np.ndarray:
     if n_prey == 2:
@@ -9,18 +11,24 @@ def select_trials(behav_df: pd.DataFrame, n_prey: int = 2) -> np.ndarray:
         return behav_df[np.isnan(behav_df["prey2_val"])].index.to_numpy()
     raise ValueError("n_prey must be 1 or 2.")
 
-def subset_trials(trial_df: pd.DataFrame, psth: list, trial_ids: np.ndarray):
+
+def subset_trials(
+    trial_df: pd.DataFrame, psth: list, trial_ids: np.ndarray
+) -> Tuple[pd.DataFrame, List[np.ndarray]]:
     trial_sub = trial_df[trial_df["trial_id"].isin(trial_ids)].reset_index(drop=True)
     psth_sub = [psth[i] for i in trial_ids]
     return trial_sub, psth_sub
 
-def cut_to_reaction_time(kin_df: pd.DataFrame, psth: list, reaction_time: list[int | float]):
+
+def cut_to_reaction_time(
+    kin_df: pd.DataFrame, psth: List, reaction_time: List[int | float]
+):
     psth_cut = []
     for i, rt in enumerate(reaction_time):
         if np.isnan(rt):
             psth_cut.append(psth[i])
         else:
-            psth_cut.append(psth[i][int(rt) - 1:])
+            psth_cut.append(psth[i][int(rt) - 1 :])
     # kinematics
     pieces = []
     for i, tid in enumerate(kin_df["trial_id"].unique()):
@@ -29,13 +37,16 @@ def cut_to_reaction_time(kin_df: pd.DataFrame, psth: list, reaction_time: list[i
         if np.isnan(rt):
             pieces.append(kin_df[m])
         else:
-            pieces.append(kin_df[m].iloc[int(rt)-1:])
+            pieces.append(kin_df[m].iloc[int(rt) - 1 :])
     kin_cut = pd.concat(pieces, ignore_index=True)
     return kin_cut, psth_cut
 
-def remove_trials(design_df: pd.DataFrame, behav_df: pd.DataFrame, psth: list) -> tuple[np.ndarray, pd.DataFrame, list, pd.DataFrame]:
+
+def remove_trials(
+    design_df: pd.DataFrame, behav_df: pd.DataFrame, psth: list
+) -> Tuple[np.ndarray, np.ndarray, pd.DataFrame, List[np.ndarray], pd.DataFrame]:
     # remove trials with paused session
-    paused_trials = np.where(behav_df['paused'] > 0)[0]
+    paused_trials = np.where(behav_df["paused"] > 0)[0]
 
     # remove trials with less than 10 samples
     short_trials = []
@@ -54,7 +65,7 @@ def remove_trials(design_df: pd.DataFrame, behav_df: pd.DataFrame, psth: list) -
     to_remove_idx = np.array(to_remove_idx)
     to_keep_idx = np.arange(len(design_df["trial_id"].unique()))
     to_keep_idx = np.setdiff1d(to_keep_idx, to_remove_idx)
-    
+
     # now remove trials :D
     pieces = []
     for tid in to_keep:

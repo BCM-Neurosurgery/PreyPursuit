@@ -3,6 +3,8 @@ import os
 from scipy.io import loadmat
 import pandas as pd
 import numpy as np
+from typing import Tuple, List
+
 
 def _ensure_file(base: str, rel: str, label: str) -> str:
     path = os.path.join(base, rel)
@@ -10,20 +12,27 @@ def _ensure_file(base: str, rel: str, label: str) -> str:
         raise FileNotFoundError(f"{label} not found at {path}")
     return path
 
+
 def load_behav(base_path: str) -> pd.DataFrame:
     behav_path = _ensure_file(base_path, "events_info.mat", "Behavioral data")
     behav_raw = loadmat(behav_path)
     fieldnames = behav_raw["events_info"].dtype.names
-    behav_data = {f: [item[0].item() for item in behav_raw["events_info"][f].squeeze()] for f in fieldnames}
+    behav_data = {
+        f: [item[0].item() for item in behav_raw["events_info"][f].squeeze()]
+        for f in fieldnames
+    }
     return pd.DataFrame(behav_data)
 
-def load_neural(base_path: str) -> tuple[pd.DataFrame, list[np.ndarray], pd.DataFrame]:
+
+def load_neural(base_path: str) -> Tuple[pd.DataFrame, List[np.ndarray], pd.DataFrame]:
     neural_path = _ensure_file(base_path, "neuronData.mat", "Neural data")
     neural_raw = loadmat(neural_path)
 
     # Trial-wide fields (flatten to long table)
     fieldnames = neural_raw["neuronData"].dtype.names
-    keep = [f for f in fieldnames if f not in {"brain_region", "neruons_info", "spikes"}]
+    keep = [
+        f for f in fieldnames if f not in {"brain_region", "neruons_info", "spikes"}
+    ]
     trial_dict = {f: [] for f in keep}
     for f in keep:
         arr = neural_raw["neuronData"][f].squeeze()
@@ -52,11 +61,9 @@ def load_neural(base_path: str) -> tuple[pd.DataFrame, list[np.ndarray], pd.Data
         info["neuron_id"].extend(list(range(trial.shape[0])))
         info["brain_region"].extend([r.item() for r in trial])
     # neuron labels
-    lbl = neural_raw["neuronData"]["neruons_info"].squeeze()
-    for trial in lbl:
-        info["neuron_label"].extend([l.item() for l in trial.squeeze()])
+    labels = neural_raw["neuronData"]["neruons_info"].squeeze()
+    for trial in labels:
+        info["neuron_label"].extend([label.item() for label in trial.squeeze()])
 
     neuron_info_df = pd.DataFrame(info)
     return trial_df, psth, neuron_info_df
-
-

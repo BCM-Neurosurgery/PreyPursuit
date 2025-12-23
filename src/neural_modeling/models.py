@@ -1,11 +1,21 @@
 import jax.numpy as jnp
+import numpy as np
 import numpyro
 import numpyro.distributions as dist
 import jax.scipy.linalg as linalg
+from typing import List, Optional
 
-def prs_double_penalty(bases, base_smoothing_matrix, interaction_tensors=[], 
-                       tensor_smoothing_matrix=None, y=None, cauchy=0.1, sigma=1.0, jitter=1e-6,
-                       ):
+
+def prs_double_penalty(
+    bases: List[jnp.ndarray],
+    base_smoothing_matrix: np.ndarray,
+    interaction_tensors: List[jnp.ndarray] = [],
+    tensor_smoothing_matrix: Optional[np.ndarray] = None,
+    y: Optional[jnp.ndarray] = None,
+    cauchy: float = 0.1,
+    sigma: float = 1.0,
+    jitter: float = 1e-6,
+):
     """
     Bayesian model with double penalty shrinkage on smoothing terms, using null space of S to construct S*.
 
@@ -19,10 +29,9 @@ def prs_double_penalty(bases, base_smoothing_matrix, interaction_tensors=[],
     - sigma: Variance scale for the covariance matrix of the priors.
     - jitter: Small value added to the diagonal of penalty matrices to ensure positive definiteness.
     """
-    num_vars = len(bases)
     beta_list = []
-    cap_min=10e-6
-    cap_max=10e2
+    cap_min = 10e-6
+    cap_max = 10e2
 
     # Estimate sigma
     sigma = numpyro.sample("sigma", dist.HalfCauchy(3.0))
@@ -59,7 +68,9 @@ def prs_double_penalty(bases, base_smoothing_matrix, interaction_tensors=[],
         eigenvalues, eigenvectors = linalg.eigh(S)
 
         # Identify indices of null space eigenvalues (those close to zero)
-        null_space_indices = jnp.where(jnp.isclose(eigenvalues, 0, atol=1e-5), size=eigenvalues.shape[0])[0]
+        null_space_indices = jnp.where(
+            jnp.isclose(eigenvalues, 0, atol=1e-5), size=eigenvalues.shape[0]
+        )[0]
 
         # Select null space columns from eigenvectors using null_space_indices
         null_space_columns = eigenvectors[:, null_space_indices]
@@ -80,12 +91,14 @@ def prs_double_penalty(bases, base_smoothing_matrix, interaction_tensors=[],
         L = jnp.linalg.cholesky(S_jittered)
 
         # Covariance matrix from Cholesky factor
-        covariance_matrix = jnp.linalg.inv(L.T @ L) / sigma ** 2
+        covariance_matrix = jnp.linalg.inv(L.T @ L) / sigma**2
 
-        beta = numpyro.sample(varname,
-                                dist.MultivariateNormal(loc=jnp.zeros(n_bases),
-                                                        covariance_matrix=covariance_matrix))
-       
+        beta = numpyro.sample(
+            varname,
+            dist.MultivariateNormal(
+                loc=jnp.zeros(n_bases), covariance_matrix=covariance_matrix
+            ),
+        )
 
         beta_list.append(beta)
 
@@ -95,15 +108,21 @@ def prs_double_penalty(bases, base_smoothing_matrix, interaction_tensors=[],
 
     # now calculate betas for interaction tensors
     for j, tensor_df in enumerate(interaction_tensors):
-        lambda_j_tensor = numpyro.sample(f"lambda_j_tensor_{j}", dist.HalfCauchy(cauchy))
-        lambda_star_tensor = numpyro.sample(f"lambda_star_tensor_{j}", dist.HalfCauchy(2.0 * cauchy))
+        lambda_j_tensor = numpyro.sample(
+            f"lambda_j_tensor_{j}", dist.HalfCauchy(cauchy)
+        )
+        lambda_star_tensor = numpyro.sample(
+            f"lambda_star_tensor_{j}", dist.HalfCauchy(2.0 * cauchy)
+        )
 
         # Eigen-decomposition for tensor product smooth term
         eigenvalues_tensor, eigenvectors_tensor = linalg.eigh(tensor_smoothing_matrix)
 
         # Identify indices of null space eigenvalues (those close to zero)
-        null_space_indices_tensor = \
-        jnp.where(jnp.isclose(eigenvalues_tensor, 0, atol=1e-5), size=eigenvalues_tensor.shape[0])[0]
+        null_space_indices_tensor = jnp.where(
+            jnp.isclose(eigenvalues_tensor, 0, atol=1e-5),
+            size=eigenvalues_tensor.shape[0],
+        )[0]
 
         # Select null space columns from eigenvectors_tensor using null_space_indices_tensor
         null_space_columns_tensor = eigenvectors_tensor[:, null_space_indices_tensor]
@@ -111,14 +130,20 @@ def prs_double_penalty(bases, base_smoothing_matrix, interaction_tensors=[],
         # Construct the S_star_tensor matrix for null space penalty
         S_star_tensor = null_space_columns_tensor @ null_space_columns_tensor.T
 
-        tensor_S_jittered = lambda_j_tensor * tensor_smoothing_matrix + lambda_star_tensor * S_star_tensor + jnp.eye(
-            tensor_smoothing_matrix[0]) * jitter
+        tensor_S_jittered = (
+            lambda_j_tensor * tensor_smoothing_matrix
+            + lambda_star_tensor * S_star_tensor
+            + jnp.eye(tensor_smoothing_matrix.shape[0]) * jitter
+        )
         L_tensor = jnp.linalg.cholesky(tensor_S_jittered)
-        covariance_tensor = jnp.linalg.inv(L_tensor.T @ L_tensor) / sigma ** 2
+        covariance_tensor = jnp.linalg.inv(L_tensor.T @ L_tensor) / sigma**2
 
-        beta_tensor = numpyro.sample(f"beta_tensor_{j}",
-                                        dist.MultivariateNormal(loc=jnp.zeros(tensor_df.shape[1]),
-                                                                covariance_matrix=covariance_tensor))
+        beta_tensor = numpyro.sample(
+            f"beta_tensor_{j}",
+            dist.MultivariateNormal(
+                loc=jnp.zeros(tensor_df.shape[1]), covariance_matrix=covariance_tensor
+            ),
+        )
 
         linear_pred += jnp.dot(tensor_df, beta_tensor)
 
@@ -128,7 +153,7 @@ def prs_double_penalty(bases, base_smoothing_matrix, interaction_tensors=[],
     numpyro.sample("y", dist.Poisson(rate=jnp.exp(linear_pred)), obs=y)
 
 
-def baseline_noise_model(y):
+def baseline_noise_model(y: jnp.ndarray):
     # Define a prior for the intercept term
     intercept = numpyro.sample("intercept", dist.Normal(0, 10))
 
