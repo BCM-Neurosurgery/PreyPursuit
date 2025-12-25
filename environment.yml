@@ -11,3 +11,6 @@ dependencies:
   - ruptures
   - optax
   - numpyro
+  - arviz
+  - patsy
+  - dill
