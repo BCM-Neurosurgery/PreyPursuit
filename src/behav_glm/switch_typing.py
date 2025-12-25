@@ -3,12 +3,12 @@ from scipy.stats import pearsonr
 import numpy as np
 import pandas as pd
 import ruptures as rpt
-from typing import Dict, List
+from typing import Dict, List, Any
 
 
 def get_switch_types(
     wt_windows: np.ndarray,
-    window_data: Dict[str],
+    window_data: Dict[str, Any],
     split1_thresh: float = 0.97,
     split2_thresh: float = 0.99,
     split3_thresh: float = 0.97,

@@ -30,6 +30,7 @@ class NGLM:
         trial_wts = load_shift_matrices(self.wt_path)
         trial_df = normalize_data(trial_df, trial_wts)
         design_mat = create_design_matrix(trial_df)
+        self.trial_df = trial_df
         self.design_mat = design_mat
         return design_mat
 
@@ -78,9 +79,11 @@ class NGLM:
             n_steps,
             bases=self.design_mat["bases"],
             base_smoothing_matrix=self.design_mat["base_smoothing_matrix"],
+            relvalue_smoothing_matrix=self.design_mat["relvalue_smoothing_matrix"],
             interaction_tensors=self.design_mat["interaction_tensors"],
             tensor_smoothing_matrix=self.design_mat["tensor_smoothing_matrix"],
             y=fr_mat,
+            progress_bar=False,
             **kwargs,
         )
 
@@ -143,7 +146,7 @@ class NGLM:
         self,
         posterior_samples: Dict[str, jnp.ndarray],
         ci_upper: Dict[str, jnp.ndarray],
-        ci_lower: Dict[jnp.jndarray],
+        ci_lower: Dict[str, jnp.ndarray],
     ) -> Dict[str, np.ndarray]:
         self.coef_keep = {}
 
@@ -210,13 +213,15 @@ class NGLM:
         return idata
 
     # fit baseline noise model
-    def fit_baseline(self) -> SVIRunResult:
+    def fit_baseline(self, **kwargs) -> SVIRunResult:
         fr_mat = self.y
         self.noise_guide = AutoNormal(baseline_noise_model)
         optimizer = optim.ClippedAdam(step_size=1e-2)
 
         svi = SVI(baseline_noise_model, self.noise_guide, optimizer, loss=Trace_ELBO())
-        self.noise_res = svi.run(PRNGKey(0), 2000, y=jnp.array(fr_mat))
+        self.noise_res = svi.run(
+            PRNGKey(0), 2000, y=jnp.array(fr_mat), progress_bar=False, **kwargs
+        )
         return self.noise_res
 
     # compute idata for base model, for significance comparison

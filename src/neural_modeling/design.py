@@ -39,14 +39,16 @@ def normalize_data(trial_df: pd.DataFrame, trial_wts: List[np.ndarray]) -> pd.Da
 
 
 def create_design_matrix(
-    trial_df: pd.DataFrame, n_bases: int = 6, n_interaction_bases: int = 4
+    trial_df: pd.DataFrame, n_bases: int = 11, n_interaction_bases: int = 11
 ) -> Dict[str, Any]:
     bases, interaction_tensor = generate_bases(trial_df, n_bases, n_interaction_bases)
     base_penalty = basis_penalty(bases[0].shape[1])
+    relvalue_penalty = basis_penalty(1)
     tensor_penalty = interaction_penalty(interaction_tensor[0].shape[1], 1)
     design_mat = {
         "bases": bases,
         "base_smoothing_matrix": base_penalty,
+        "relvalue_smoothing_matrix": relvalue_penalty,
         "interaction_tensors": interaction_tensor,
         "tensor_smoothing_matrix": tensor_penalty,
     }

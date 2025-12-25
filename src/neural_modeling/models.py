@@ -9,6 +9,7 @@ from typing import List, Optional
 def prs_double_penalty(
     bases: List[jnp.ndarray],
     base_smoothing_matrix: np.ndarray,
+    relvalue_smoothing_matrix: np.ndarray,
     interaction_tensors: List[jnp.ndarray] = [],
     tensor_smoothing_matrix: Optional[np.ndarray] = None,
     y: Optional[jnp.ndarray] = None,
@@ -39,14 +40,17 @@ def prs_double_penalty(
     intercept = numpyro.sample("intercept", dist.Normal(0, 10))
 
     for idx, base_df in enumerate(bases):
+        smoothing_mat = (
+            base_smoothing_matrix if idx < len(bases) - 1 else relvalue_smoothing_matrix
+        )
         varname = f"beta_{idx}"
 
         # basis function type
         n_bases = base_df.shape[1]
 
         # Step 1: Add Jitter
-        S = base_smoothing_matrix
-        S_jittered = base_smoothing_matrix + jitter * jnp.eye(S.shape[0])
+        S = smoothing_mat
+        S_jittered = smoothing_mat + jitter * jnp.eye(S.shape[0])
 
         # Step 2: Eigen-decomposition
         eigenvalues, eigenvectors = jnp.linalg.eigh(S_jittered)

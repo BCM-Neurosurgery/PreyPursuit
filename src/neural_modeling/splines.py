@@ -4,15 +4,19 @@ import pandas as pd
 import jax.numpy as jnp
 from typing import List
 
+VAR_NAMES = ["speed", "reldistPrey", "relspeed", "rel_samples", "wt", "relValue"]
+
 
 def generate_bases(
-    trial_df: pd.DataFrame, n_bases: int = 6, n_interaction_bases: int = 4
+    trial_df: pd.DataFrame, n_bases: int = 11, n_interaction_bases: int = 11
 ) -> tuple[List[pd.DataFrame]]:
-    vars = ["speed", "reldistPrey", "relspeed", "rel_samples", "relValue", "wt"]
     bases = []
-    for idx, var in enumerate(vars):
+    for idx, var in enumerate(VAR_NAMES):
+        formula = (
+            f"cr(x{idx + 1}, df=nbases) - 1" if var != "relValue" else f"x{idx + 1} - 1"
+        )
         basis = dmatrix(
-            f"cr(x{idx + 1}, df=nbases) - 1",
+            formula,
             {f"x{idx + 1}": trial_df[var], "nbases": n_bases},
             return_type="dataframe",
         )
