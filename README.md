@@ -11,7 +11,8 @@ conda activate pac_control_env
 python run_example_controller_modeling.py
 ```
 
-All modeling code was written by Justin Fine, with modifications by Assia Chericoni and Taha Ismail
+All modeling code (except dPCA) was written by Justin Fine, with modifications by Assia Chericoni and Taha Ismail
+dPCA was written by Wieland Brendel
 
 
 

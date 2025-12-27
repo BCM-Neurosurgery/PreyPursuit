@@ -104,3 +104,12 @@ class BGLM:
         self.model = model
         self.model_res = model_res
         return model, model_res
+
+    # function to save switch info if needed
+    def save_switch_info(self, output_path: str) -> None:
+        try:
+            switch_dfs = self.switch_dfs
+        except AttributeError:
+            raise NotFittedError("have to calculate switches before saving switch info")
+        for pt_id, switch_df in switch_dfs.items():
+            switch_df.to_csv(f"{output_path}/switch_info_{pt_id}.csv", index=False)

@@ -9,8 +9,10 @@ dependencies:
   - scikit-learn
   - jax
   - ruptures
+  - numexpr
   - optax
   - numpyro
   - arviz
+  - numba
   - patsy
   - dill
