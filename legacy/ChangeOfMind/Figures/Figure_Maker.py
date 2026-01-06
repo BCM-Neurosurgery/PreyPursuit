@@ -15,7 +15,7 @@ from scipy.spatial.distance import cdist
 from scipy.ndimage import gaussian_filter as gf
 from scipy.stats import binomtest
 from scipy.optimize import nnls
-from ChangeOfMind.functions import processing as proc
+from ..functions import processing as proc
 from sklearn.linear_model import LogisticRegression,LogisticRegressionCV,LinearRegression
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import KFold

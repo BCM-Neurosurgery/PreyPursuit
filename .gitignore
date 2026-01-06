@@ -3,3 +3,7 @@ test/
 *test*.py
 *test*.ipynb
 .ipynb_checkpoints/
+example_data/*/p*/
+example_data/*/*.pkl
+examle_data/*/*.mat
+example_data/*.mat
