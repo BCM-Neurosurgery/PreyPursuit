@@ -22,7 +22,7 @@ class BGLM:
         self.patient_datas = {}
         for pt_info, path in zip(patient_data, controller_paths):
             pt_id = pt_info.patient_id
-            self.shift_matrices[pt_id] = load_shift_matrices(path)
+            self.shift_matrices[pt_id] = load_shift_matrices(path, model=config.model)
             self.patient_datas[pt_id] = pt_info
         self.config = config
 

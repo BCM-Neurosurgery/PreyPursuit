@@ -10,7 +10,7 @@ def get_switch_types(
     wt_windows: np.ndarray,
     window_data: Dict[str, Any],
     split1_thresh: float = 0.97,
-    split2_thresh: float = 0.99,
+    split2_thresh: float = 0.7,
     split3_thresh: float = 0.97,
 ) -> pd.DataFrame:
     # zscore windows

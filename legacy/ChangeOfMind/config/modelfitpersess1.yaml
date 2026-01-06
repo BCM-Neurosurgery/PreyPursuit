@@ -1,0 +1,28 @@
+# settings.yaml
+data_type: 'nhp' # experiment (nhp or emu)
+results_path: '/Users/user/PycharmProjects/PacManMain/ChangeOfMind/results/NHP/H/'
+start_fresh : False
+
+cfgparams:
+  subj : 'H'
+  session : 1
+  models: ['pv','pf','pi','pvi','pif','pvf']
+  ngains : [2,2,2,3,3,3]
+  opttype : "second" # Adam and Lbfgs
+  rbfs: [25]
+  restarts: 3
+  slack : False
+  scaling : 0.001
+  area: "dACC"
+  sessions_per : [5,21]
+  subjects : ['H','K']
+  lambda_reg: 10
+  uncertain_tiebreak : False
+  data_path: "/Users/user/PycharmProjects/PacManMain/data/NHP"
+  # Prior standard deviations for fit
+  prior_std:
+    weights: 10
+    widths: 6
+    gains: 5
+  elbo_samples : 10
+

@@ -6,7 +6,7 @@ from glob import glob
 from sklearn.exceptions import NotFittedError
 
 
-def load_shift_matrices(path):
+def load_shift_matrices(path, model=None):
     # find shift directories in matrix path
     controller_paths = glob(f"{path}/p*")
     if len(controller_paths) == 0:
@@ -22,7 +22,7 @@ def load_shift_matrices(path):
         fit_dfs[idx] = df
     fit_df = pd.concat(fit_dfs, ignore_index=True)
 
-    # pick best results per trial
+    # pick best results per trial (or model if we've preselected)
     shift_matrices = []
     shift_memos = {}
     for idx, (tid, trial_df) in enumerate(fit_df.groupby("trial_id")):
@@ -32,6 +32,8 @@ def load_shift_matrices(path):
         else:
             best_row = trial_df.loc[best_idx]
         best_controller = best_row.controller
+        if model != None:
+            best_controller = model
         if best_controller in shift_memos:
             shift_data = shift_memos[best_controller]
         else:

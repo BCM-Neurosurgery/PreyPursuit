@@ -57,7 +57,7 @@ def get_cross_windows(
     trial_wts: List[np.ndarray],
     cross_idcs: List[int],
     trial_ids: List[int],
-    window_size: int = 8,
+    window_size: int = 15,
 ):
     wt_windows = []
     window_info = []

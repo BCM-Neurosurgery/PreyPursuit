@@ -1,0 +1,17 @@
+$env:PYTHONPATH="C:\PacManMain"
+$configs = @(
+    "C:/PacManMain/ChangeOfMind/config/modelfitpersess1.yaml",
+    "C:/PacManMain/ChangeOfMind/config/modelfitpersess2.yaml"
+    # Add more config files as needed
+)
+
+foreach ($config in $configs) {
+    Start-Process -FilePath "python" -ArgumentList "ModelFitting.py --config $config --mode main2"
+}
+
+python C:/PacManMain/ChangeOfMind/scripts/ModelFitting.py --config /PacManMain/ChangeOfMind/config/modelfitpersess.yaml --mode main2
+
+
+
+export PYTHONPATH=/Users/user/PyCharmProjects/PacManMain
+python ModelFitting.py --config /Users/user/PycharmProjects/PacManMain/ChangeOfMind/config/modelfitpersess2.yaml --mode main2

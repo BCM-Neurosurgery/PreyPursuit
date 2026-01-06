@@ -1,0 +1,4 @@
+#Things missing in here, including several specialized functions I wrote in matlab.
+1. Neural data handling
+2. Switch splitting codes
+3. Xtrain and metadata handler

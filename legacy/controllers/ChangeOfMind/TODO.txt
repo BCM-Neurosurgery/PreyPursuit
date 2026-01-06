@@ -1,0 +1,26 @@
+Behavior:
+1. Capture rate and Timing by delta value
+2. Do delta_wt on other variables.
+3. Control model of delta_wt
+4. Supp plots showing minimal correlation
+
+
+Behavioral
+
+Neural_GLM
+
+2. clustering
+3. NNMF and one to one match
+4.  Single trial: decoder
+
+Demixed_PCA:
+1. neuron contribution from participation ratio of weights
+2. Single variable correlations
+3. If tempted, LDS on same session data
+
+Evidence Accumulate
+
+Neural Theory plots:
+Tesselation of space or discretized attractors
+
+

@@ -16,7 +16,8 @@ patient_data = PatientData("YFD", data_path, data_config)
 patient_data.load()
 patient_data.compute_design_matrix()
 
-controller_types = ["p", "pv", "pf", "pi", "pvi", "pif", "pvf", "pvif"]
+# controller_types = ["p", "pv", "pf", "pi", "pvi", "pif", "pvf", "pvif"]
+controller_types = ["pv"]
 
 for controller in controller_types:
     behav_config.model = controller

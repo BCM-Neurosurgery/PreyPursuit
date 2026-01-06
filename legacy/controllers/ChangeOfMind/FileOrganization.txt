@@ -1,0 +1,18 @@
+Scripts to run major processing/analysis
+
+1. Process: Behavioral model fitting
+1. Script: ModelFitting.py and ModelRunparallelmax.sh
+1. Analysis: Fig1_BehaviorAnalysis.ipynb
+
+
+2. Process: Bayesian Poisson GLMS to neurons
+2. Script: neuralglm.py
+2. Analysis: Fig2_Neural_GLM.ipynb
+
+
+3. Process: Demixed PCA
+3. Script: dpcarun.py
+3. Analysis: Fig3_DemixedPCA.ipynb
+
+
+

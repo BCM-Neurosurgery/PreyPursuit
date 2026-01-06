@@ -1,0 +1,23 @@
+# settings.yaml
+data_type: 'nhp' # experiment (nhp or emu)
+results_path: '/Users/user/PycharmProjects/PacManMain/ChangeOfMind/results/Files/'
+start_fresh : False
+
+cfgparams:
+  session : 1
+  models: ['p','pv','pf','pi','pvi','pif','pvf']
+  ngains : [1,2,2,2,3,3,3]
+  rbfs: [30]
+  restarts: 1
+  slack : False
+  scaling : 0.001
+  subject : ['YEX']
+  lambda_reg: 10
+  uncertain_tiebreak : False
+  # Prior standard deviations for fit
+  prior_std:
+    weights: 10
+    widths: 6
+    gains: 5
+  elbo_samples : 10
+
