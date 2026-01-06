@@ -34,7 +34,7 @@ No special hardware requirements beyond a standard workstation.
 The code can be run on major operating systems (macOS, Linux, Windows) after
 installing the required dependencies. 
 - Python (3.11), see `environment.yml` for a complete list of required packages
-- MATLAB (for plotting and selected analysis)
+- MATLAB (for plotting)
 
 ## Package Installation
 Install the required Python packages using the provided conda environment file:
@@ -65,7 +65,7 @@ minutes and outputs trial-wise predicted *w<sub>t</sub>* trajectories for each s
 
 ### Model Recovery Analysis
 Code for simulation-based model recovery analysis is provided in `demo/simulation_demo.ipynb`.
-Due to long runtimes, example results and MATALB plotting scripts are included in `plotting/simulation`.
+Due to long runtimes, example results and MATLAB plotting scripts are included in `plotting/simulation`.
 
 ### Switch Analysis
 Switch detection is performed using the functions in the `ChangeOfMind/functions/processing.py` script.
@@ -85,7 +85,7 @@ can plot proportion of tuned neurons, NNMF results, and fischer information resu
 
 ### dPCA
 Neural population analysis include condition-based and *w<sub>t</sub>*-binned dPCA. Full dPCA analysis can be found under `src/dPCA` and run with the `DPCAPipeline`.
-Example scripts with synthetic-data demos are provided in `demo/dPCA_demo_Final.ipynb`. 
+The example notebooks in `demo/dPCA_demo_Final.ipynb` use synthetic data to demonstrate the full pipeline 
 
 ### Clustering analysis
 Neural population analysis for clustering ramp. Full clustering analysis can be found under `kmeans.ipynb`.
