@@ -5,15 +5,16 @@ import jax.numpy as jnp
 import pandas as pd
 from tqdm import tqdm
 import dill as pickle
-from controllers import simulator as sim
-from controllers import JaxMod as jm
-from controllers import utils as ut
+from ...PacTimeOrig.data import scripts
+from ...controllers import simulator as sim
+from ...controllers import JaxMod as jm
+from ...controllers import utils as ut
 #from controllers import datamaker
-
 
 def simulate(cfgparams=None):
 
     default_cfg = {}
+    default_cfg['folder'] = 'example_data'
     default_cfg['session'] = 1
     default_cfg['trials'] = 10
     default_cfg['models'] = ['p','pv','pf','pvi','pif','pvf']
@@ -22,6 +23,8 @@ def simulate(cfgparams=None):
     default_cfg['restarts'] = 1
     default_cfg['slack'] = False
     default_cfg['scaling'] = 0.001
+    default_cfg['subj'] = 'YFD'
+    default_cfg['trialtype'] = '2'
     default_cfg['subject'] = 'YFD'
     default_cfg['lambda_reg'] = 5
     default_cfg['uncertain_tiebreak'] = False
@@ -46,12 +49,8 @@ def simulate(cfgparams=None):
         columns=wtcorr_columns + poscorr_columns + elbo_columns + other_columns)
 
     # Use human testdata as exemplar series to
-    datum = '/Users/assiachericoni/Documents/PYTHON/ControllerModeling-main_old/workspaceBH012.pkl'
-    ff = open(datum, 'rb')
-    dat = pickle.load(ff)
-    Xdsgn=dat['Xd_sess_emu'][cfgparams['subject']][1] 
- 
-
+    Xdsgn, kinematics, sessvars, psth, brainareas = scripts.human_emu_run(cfgparams) 
+    
     # trials to use
     trialidx = np.sort(np.random.choice(np.arange(1, len(Xdsgn)), size=cfgparams['trials'], replace=False))
 
@@ -250,7 +249,7 @@ def simulate(cfgparams=None):
 
                             new_row = confusion_test(new_row, inputs, tdat, outputs, cfgparams, modname, num_rbfs,only_p=cfgparams['only_p'])
                             results = pd.concat([results, pd.DataFrame([new_row])], ignore_index=True)
-                            results.to_pickle('/Users/assiachericoni/Documents/PYTHON/ControllerModeling-main_old/testAssia/controller_maintest.pkl')
+                            results.to_pickle('example_data/controller_maintest.pkl')
                             pbar.update(1)
 
 

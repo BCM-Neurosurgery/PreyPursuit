@@ -4,7 +4,7 @@ import jax
 import jax.numpy as jnp
 from jax import jit, grad
 import optax
-from .utils import generate_rbf_basis, generate_sim_switch
+from .utils import generate_rbf_basis, generate_sim_switch, generate_smoothing_penalty
 
 def create_loss_function_inner(generate_rbf_basis, num_rbfs, generate_smoothing_penalty, lambda_reg, ctrltype='pv',
                                opttype='first', assignment='soft'):
