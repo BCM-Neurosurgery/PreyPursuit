@@ -56,7 +56,7 @@ python -m scripts.run_controller_modeling -c pv
 **NOTE**: all example data will by default be stored in the example_data/ directory. You can generally change the output directory directly in the code if needed.
 
 The controller modeling pipeline has a runtime of approximately 15
-minutes and outputs trial-wise predicted wttrajectories for each controller class,
+minutes and outputs trial-wise predicted *w<sub>t</sub>* trajectories for each controller class,
 together with the corresponding evidence lower bound (ELBO) values.
 
 ## Recovery Simulations
@@ -69,14 +69,14 @@ simulation, together with MATLAB scripts for reproducing the figures, in `plotti
 Switch detection is performed using the functions in the `ChangeOfMind/functions/processing.py` script.
 An example implementation is provided in the demo/ folder as a Jupyter
 notebook (`demo/plot_switch_detection.ipynb`). This demo can be run directly on the output of the
-behavioral modeling pipeline (i.e., trial-wise w<sub>t</sub> time series).
+behavioral modeling pipeline (i.e., trial-wise *w<sub>t</sub>* time series).
 
 ## GLM modeling
 To run GLM modeling with example data, execute the following script
 ```{bash}
 python -m scripts.run_glm_modeling -p YFD
 ```
-^ can optionally specify controller type to use for w<sub>t</sub> with `-m <c>`
+^ can optionally specify controller type to use for *w<sub>t</sub>* with `-m <c>`
 
 ## dPCA
 a demo of the dPCA analysis is included in `demo/dPCA_demo_Final.ipynb`. It is not intetended to generate interpretable results, but only to show how the dPCA analysis is implemented.
