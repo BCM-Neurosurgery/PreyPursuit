@@ -8,10 +8,10 @@ code for running modeling for:
 * [Data availability](#data-availability)
 * [Authorship Statement](#authorship-statement)
 * [Package Installation](#package-installation)
-* [Controller Modeling](#controller-modeling)
-* [Recovery Simulations](#recovery-simulations)
-* [Switch Detection](#switch-detection)
-* [GLM modeling](#glm-modeling)
+* [Controller Modeling](#behavioral-modeling)
+* [Recovery Simulations](#model-recovery-analysis)
+* [Switch Detection](#switch-analysis)
+* [GLM modeling](#neural-gam-modeling)
 * [dPCA](#dpca)
 * [Clustering](#clustering-analysis)
 
@@ -57,7 +57,6 @@ python -m scripts.run_controller_modeling -c pv
 - pvi
 - pif
 - pvf
-- pvif
 
 **NOTE**: all results will by default be stored in the `example_data/` directory. 
 
