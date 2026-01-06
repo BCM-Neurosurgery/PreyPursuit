@@ -8,16 +8,16 @@ dependencies:
   - numpy
   - scikit-learn
   - jax
+  - flax
+  - seaborn
   - ruptures
   - numexpr
   - optax
   - numpyro
   - arviz
+  - mat73
   - numba
   - patsy
-  - dill
   - cython
+  - dill
   - pip
-  - pip:
-    - --no-build-isolation
-    - ssm@git+https://github.com/lindermanlab/ssm

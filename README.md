@@ -37,11 +37,13 @@ installing the required dependencies.
 - MATLAB (for plotting)
 
 ## Package Installation
-Install the required Python packages using the provided conda environment file:
+Install the required Python packages using the provided conda environment file (will have to install pip packages manually):
+NOTE: On Windows, Visual Studio C++ Build Tools must be v14.0.0 or greater
 
 ```{bash}
 conda env create -f environment.yml
 conda activate pac_control_env
+pip install --no-build-isolation "ssm @ git+https://github.com/lindermanlab/ssm"
 ```
 
 ## Repo Contents
