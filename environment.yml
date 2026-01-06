@@ -16,6 +16,8 @@ dependencies:
   - numba
   - patsy
   - dill
+  - cython
   - pip
   - pip:
-    - ssm@git+https://github.com/lindermanlab/ssm.git
+    - --no-build-isolation
+    - ssm@git+https://github.com/lindermanlab/ssm
