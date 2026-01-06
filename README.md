@@ -17,7 +17,7 @@ code for running modeling for:
 
 ## Data Availability
 This repository includes example behavioral and neural data from one participant,
-provided to demonstrate the full analysis pipeline.
+provided to demonstrate the full analysis pipeline. It also includes synthetic datasets with matched structure to support population level neural analysis demos.
 
 ## Authorship Statement
 All behavioral modeling code was originally written by Justin Fine, with subsequent
