@@ -58,7 +58,7 @@ python -m scripts.run_controller_modeling -c pv
 - pif
 - pvf
 
-**NOTE**: all results will by default be stored in the `example_data/` directory. 
+**NOTE**: all results will by default be stored in the `example_data/` directory named by controller output (e.g., `example_data/YFD/pv`). Folder will contain `model_fit_results.csv` (model weights + ELBO) and `model_matrices.mat` (*w<sub>t</sub>* timeseries by trial)
 
 The controller modeling pipeline has a runtime of approximately 15
 minutes and outputs trial-wise predicted *w<sub>t</sub>* trajectories for each specified controller class.
