@@ -2,7 +2,7 @@
 
 clear; close all
 
-load('dPCA_WtBins_SyntheticACC.mat');
+load('example_data/dPCA_WtBins_SyntheticACC.mat');
 
 % rwd0 = load('/Users/assiachericoni/Documents/PYTHON/ControllerModeling-main_old/PacManData/dPCA_Decoding/dPCA_rwd0AllRegions_control.mat');
 % 
@@ -29,7 +29,7 @@ figure; imagesc(t_ms, wt_centers, (STacc0z)); axis xy; axis square
 title(sprintf('ACC st (%.1f%% var)', 100*expvar_acc.st(1)));
 xlabel('time'); ylabel('W_t'); box off; set(gca,'TickDir','out');
 set(gca, 'TickDir', 'out', 'Color', 'none', 'Box', 'off', 'FontName', 'Helvetica', 'FontSize', 12);
-colormap(bluered);
+colormap(redbluecmap);
 colorbar;
 caxis([-1.5 1.5]);  
 
