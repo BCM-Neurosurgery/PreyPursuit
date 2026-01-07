@@ -87,7 +87,7 @@ can plot proportion of tuned neurons, NNMF results, and fischer information resu
 
 ### dPCA
 Neural population analysis include condition-based and *w<sub>t</sub>*-binned dPCA. Full dPCA analysis can be found under `src/dPCA` and run with the `DPCAPipeline`.
-The example notebooks in `demo/dPCA_demo_Final.ipynb` use synthetic data to demonstrate the full pipeline 
+The example notebooks in `demo/dPCA_demo_Final.ipynb` use synthetic data to demonstrate the full pipeline. Plotting scripts can be found in `plotting/MAIN_plot_dPCA_results.m`
 
 ### Clustering analysis
  The LDS + KMeans clustering pipeline is implemented in `scripts/lds_cluster_pipeline.py`.
