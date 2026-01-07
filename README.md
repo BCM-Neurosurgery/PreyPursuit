@@ -90,5 +90,6 @@ Neural population analysis include condition-based and *w<sub>t</sub>*-binned dP
 The example notebooks in `demo/dPCA_demo_Final.ipynb` use synthetic data to demonstrate the full pipeline 
 
 ### Clustering analysis
-Neural population analysis for clustering ramp. Full clustering analysis can be found under `kmeans.ipynb`.
+ The LDS + KMeans clustering pipeline is implemented in `scripts/lds_cluster_pipeline.py`.
+ The example notebook `demo/run_lds_cluster_pipeline_demo.ipynb` demonstrates the analysis on data from a single subject for clarity, although the full pipeline is designed to operate on pseudopopulations pooled across subjects.
 
